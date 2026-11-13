@@ -1,0 +1,7 @@
+docker compose up --build
+localhost:3001
+docker exec -it student-mysql mysql -u root -p
+
+USE student_db;
+SHOW TABLES;
+SELECT * FROM students;

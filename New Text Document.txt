@@ -1,0 +1,470 @@
+docker compose up --build
+localhost:3001
+docker exec -it student-mysql mysql -u root -p
+
+USE student_db;
+SHOW TABLES;
+SELECT * FROM students;
+
+
+Reusable Full-Stack Web Application – Lab Exam Template
+You can use this structure for Student Management, Employee Management, Hospital Appointment Booking, Library Management, Product Management, Online Shopping, etc.
+Page 1 – Introduction, objective and system architecture
+1. Aim
+To design and develop a full-stack web application for [Use Case Name] using HTML, CSS, JavaScript, Node.js, Express.js, MySQL and Docker.
+2. Objective
+The main objective of this application is to provide an easy and efficient way to manage [students/employees/products/appointments/books].
+
+The application allows users to add, view, update, delete and search records. The information is stored in a MySQL database and accessed through backend APIs.
+3. Technologies used
+Technology	Purpose
+HTML	Creates the webpage structure
+CSS	Provides styling
+JavaScript	Handles user interactions
+Node.js	Executes backend JavaScript
+Express.js	Creates API routes
+MySQL	Stores application data
+Docker	Containerizes the application
+
+4. System architecture
+Draw this diagram in the examination:
+Frontend
+
+HTML + CSS + JavaScript
+
+Backend
+
+Node.js + Express.js + REST APIs
+
+Database
+
+MySQL – Store and retrieve records
+
+
+Docker
+
+Runs the application and database in containers
+
+
+5. Working of the application
+1. The user opens the application in a browser.
+2. The frontend displays a form and records table.
+3. The user enters the required details.
+4. JavaScript sends the data to the backend using the Fetch API.
+5. Express receives the request through an API endpoint.
+6. The backend executes the required SQL query.
+7. MySQL stores or retrieves the information.
+8. The backend sends a response in JSON format.
+9. JavaScript updates the webpage without manually refreshing it.
+
+Page 2 – Frontend implementation
+6. HTML – Creating the user interface
+HTML is used to create the form and table required for the application.
+
+Important code:
+<h2>Student Management System</h2>
+
+<form id="studentForm">
+    <input id="name"
+           placeholder="Enter Name" required>
+
+    <input id="email"
+           type="email"
+           placeholder="Enter Email" required>
+
+    <input id="course"
+           placeholder="Enter Course" required>
+
+    <button type="submit">Add Student</button>
+</form>
+
+<table border="1">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Course</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="studentList"></tbody>
+</table>
+
+<script src="script.js"></script>
+
+
+Explanation:
+- Form collects user information.
+- Input fields accept the details.
+- Submit button sends the information.
+- Table displays the stored records.
+- The table body is dynamically updated using JavaScript.
+7. CSS – Styling the application
+CSS improves the appearance of the webpage.
+body {
+    font-family: Arial;
+    background: #f0f4f8;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+}
+
+input, button {
+    padding: 10px;
+    margin: 5px;
+}
+
+button {
+    background: blue;
+    color: white;
+    border: none;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+
+Explanation: CSS is used to provide background colors, spacing, alignment, button styling and table formatting.
+8. JavaScript – Connecting frontend and backend
+JavaScript handles user actions and communicates with the backend using the Fetch API.
+
+Important code for adding a record:
+document.getElementById("studentForm")
+.addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const student = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        course: document.getElementById("course").value
+    };
+
+    const response = await fetch("/students", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(student)
+    });
+
+    if (response.ok) {
+        alert("Student added successfully");
+        loadStudents();
+    }
+});
+
+
+Explanation:
+- addEventListener() detects form submission.
+- preventDefault() prevents page refresh.
+- fetch() sends data to the backend.
+- POST specifies the operation.
+- JSON.stringify() converts the object into JSON.
+- loadStudents() refreshes the displayed records.
+
+Page 3 – Backend and database implementation
+9. Node.js and Express.js – Backend
+Node.js executes JavaScript on the server side. Express.js is used to create REST API endpoints.
+
+Important code:
+const express = require("express");
+const mysql = require("mysql2");
+
+const app = express();
+
+app.use(express.json());
+app.use(express.static("public"));
+
+const db = mysql.createConnection({
+    host: "db",
+    user: "root",
+    password: "root123",
+    database: "student_db"
+});
+
+
+Explanation:
+- Express creates the server.
+- express.json() reads JSON request data.
+- express.static() serves frontend files.
+- MySQL connection connects the backend to the database.
+10. REST API operations
+These are the most important backend lines to remember.
+
+A. CREATE – Insert a record
+app.post("/students", (req, res) => {
+    const {name, email, course} = req.body;
+
+    const sql =
+    "INSERT INTO students(name,email,course) VALUES(?,?,?)";
+
+    db.query(sql, [name,email,course], (err, result) => {
+        if (err) return res.status(500).json(err);
+
+        res.json({message: "Record inserted"});
+    });
+});
+
+
+B. READ – Display all records
+app.get("/students", (req, res) => {
+    db.query("SELECT * FROM students", (err, result) => {
+        if (err) return res.status(500).json(err);
+
+        res.json(result);
+    });
+});
+
+
+C. UPDATE – Modify a record
+app.put("/students/:id", (req, res) => {
+    const {name, email, course} = req.body;
+
+    const sql =
+    "UPDATE students SET name=?, email=?, course=? WHERE id=?";
+
+    db.query(sql, [name,email,course,req.params.id],
+    (err, result) => {
+        if (err) return res.status(500).json(err);
+
+        res.json({message: "Record updated"});
+    });
+});
+
+
+D. DELETE – Remove a record
+app.delete("/students/:id", (req, res) => {
+    db.query("DELETE FROM students WHERE id=?",
+    [req.params.id], (err, result) => {
+        if (err) return res.status(500).json(err);
+
+        res.json({message: "Record deleted"});
+    });
+});
+
+
+Finally, start the server:
+app.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
+
+
+Important explanation for faculty:
+HTTP method	Operation	Purpose
+POST	Create	Insert new record
+GET	Read	Display records
+PUT	Update	Modify existing record
+DELETE	Delete	Remove a record
+
+The ? placeholders are used for parameterized queries, which help prevent SQL injection.
+11. MySQL – Database design
+MySQL is a relational database used to store application information.
+
+Create database and table:
+CREATE DATABASE student_db;
+
+USE student_db;
+
+CREATE TABLE students (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    course VARCHAR(50)
+);
+
+
+Important SQL operations:
+-- Insert
+INSERT INTO students(name,email,course)
+VALUES('Rahul','rahul@gmail.com','CSE');
+
+-- Display
+SELECT * FROM students;
+
+-- Update
+UPDATE students
+SET course='ECE'
+WHERE id=1;
+
+-- Delete
+DELETE FROM students
+WHERE id=1;
+
+-- Search
+SELECT * FROM students
+WHERE name='Rahul';
+
+
+Explanation:
+- Primary key uniquely identifies each record.
+- AUTO_INCREMENT automatically generates IDs.
+- NOT NULL prevents empty values.
+- UNIQUE prevents duplicate email addresses.
+- SQL queries perform database operations.
+
+Page 4 – Docker containerization and deployment
+12. Docker – Containerization
+Docker is a platform used to package an application and its dependencies into containers.
+
+It helps the application run consistently across different environments.
+
+A. Dockerfile
+FROM node:22
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3000
+
+CMD ["node", "server.js"]
+
+
+Explanation:
+- FROM selects the Node.js base image.
+- WORKDIR creates the working directory.
+- COPY copies application files.
+- RUN npm install installs dependencies.
+- EXPOSE documents the application port.
+- CMD starts the backend server.
+B. Docker Compose
+
+Docker Compose is used to run multiple containers together.
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: student_db
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  dbdata:
+
+
+Explanation:
+- app runs the Node.js application.
+- db runs the MySQL database.
+- ports maps the host port to the container port.
+- depends_on waits for database health.
+- volumes preserve database information and initialize the database.
+13. Important Docker commands
+# Build and start containers
+docker compose up --build -d
+
+# Display running containers
+docker ps
+
+# View application logs
+docker compose logs app
+
+# Stop containers
+docker compose down
+
+# Stop and remove containers and database volume
+docker compose down -v
+
+
+Note: The last command deletes the persistent database volume, so do not use it when you need to retain your records.
+14. Local deployment
+After starting the containers, open the browser and enter:
+
+http://localhost:3000
+
+The application is now accessible locally.
+
+To verify the application:
+1. Add a new record.
+2. View the record in the table.
+3. Update the record.
+4. Delete the record.
+5. Verify the changes in MySQL.
+6. Show running Docker containers using docker ps.
+
+Page 5 – Application workflow, use-case adaptation and conclusion
+15. Overall application workflow
+Draw this flowchart:
+Start application
+User enters details
+Frontend sends API request
+Backend processes request
+MySQL executes SQL query
+Backend returns response
+Frontend displays updated result
+
+16. How to adapt the same application to any use case
+This is the most important part of your preparation.
+
+You don't need to change the entire application. Change the entity name, input fields, table name and SQL columns according to the question.
+Use case	Database table	Important fields
+Student Management	students	name, email, course, age
+Employee Management	employees	name, email, department, salary
+Hospital Management	patients	name, age, disease, doctor
+Library Management	books	title, author, category, quantity
+Product Management	products	name, price, category, stock
+Appointment Booking	appointments	patient_name, doctor, date, time
+Vehicle Management	vehicles	vehicle_number, model, owner
+Event Management	events	event_name, date, venue, capacity
+
+Example: If the examination question is Employee Management
+
+Change:
+CREATE TABLE employees (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(100),
+    department VARCHAR(50),
+    salary DECIMAL(10,2)
+);
+
+
+Change the frontend fields to:
+- Employee Name
+- Email
+- Department
+- Salary
+Change the backend query:
+app.post("/employees", (req, res) => {
+    const {name, email, department, salary} = req.body;
+
+    db.query(
+      "INSERT INTO employees VALUES (NULL,?,?,?,?)",
+      [name, email, department, salary],
+      (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json({message: "Employee added"});
+      }
+    );
+});
+
+
+The remaining architecture, Docker configuration and CRUD logic stay almost the same.
+17. Conclusion
+The developed application provides a complete full-stack solution for managing [use-case-specific records]. HTML, CSS and JavaScript are used for the frontend, Node.js and Express.js handle backend operations, and MySQL stores the data. Docker is used to containerize the application and database. Thus, the application can be deployed and demonstrated locally in a consistent environment.
